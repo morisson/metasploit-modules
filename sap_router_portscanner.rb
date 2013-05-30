@@ -29,7 +29,11 @@ class Metasploit3 < Msf::Auxiliary
 						OptAddress.new('SAPROUTER_HOST', [true, 'SAPRouter address', '']),
 						OptPort.new('SAPROUTER_PORT', [true, 'SAPRouter TCP port', '3299']),
 						OptEnum.new('MODE', [true, 'Connection Mode: 0 for NI_MSG_IO (SAP), 1 for NI_RAW_IO (TCP), 2 for NI_ROUT_IO (ROUTER) ', 0, [0, 1, 2]]),
-						OptString.new('PORTS', [true, 'Ports to scan (e.g. 3200-3299,5NN13)', '32NN,33NN,48NN,80NN,36NN,81NN,5NN00-5NN19,21212,21213,59975,59976,4238-4241,3299,3298,515,7200,7210,7269,7270,7575,39NN,3909,4NN00,8200,8210,8220,8230,4363,4444,4445,9999,3NN01-3NN08,3NN11,3NN17,20003-20007,31596,31597,31602,31601,31604,2000-2002,8355,8357,8351-8353,8366,1090,1095,20201,1099,1089,443NN,444NN']),
+						OptString.new('PORTS', [true, 'Ports to scan (e.g. 3200-3299,5NN13)', '32NN,33NN,48NN,80NN,
+										36NN,81NN,5NN00-5NN19,21212,21213,59975,59976,4238-4241,3299,3298,515,7200,
+										7210,7269,7270,7575,39NN,3909,4NN00,8200,8210,8220,8230,4363,4444,4445,9999,
+										3NN01-3NN08,3NN11,3NN17,20003-20007,31596,31597,31602,31601,31604,2000-2002,
+										8355,8357,8351-8353,8366,1090,1095,20201,1099,1089,443NN,444NN']),
 						OptString.new('INSTANCES', [false,'SAP instance numbers to scan (NN)','00-99']),
 						OptInt.new('TIMEOUT', [true, 'The socket connect timeout in milliseconds', 1000]),
 						OptInt.new('CONCURRENCY', [true, 'The number of concurrent ports to check per host', 10]),
@@ -233,7 +237,7 @@ class Metasploit3 < Msf::Auxiliary
 
 	end
 
-	def build_sap_ports()
+	def build_sap_ports
 		sap_ports = []
 		sap_instances = sap_instance_to_list(datastore['INSTANCES'])
 
