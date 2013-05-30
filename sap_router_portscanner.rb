@@ -220,6 +220,8 @@ class Metasploit3 < Msf::Auxiliary
 	def sap_instance_to_list(instance)
 		instances = []
 
+		return if !instance
+
 		# Build ports array from port specification
 		instance.split(/,/).each do |item|
 			start, stop = item.split(/-/).map { |p| p.to_i }
@@ -239,15 +241,17 @@ class Metasploit3 < Msf::Auxiliary
 
 	def build_sap_ports
 		sap_ports = []
-		sap_instances = sap_instance_to_list(datastore['INSTANCES'])
 
+		sap_instances = sap_instance_to_list(datastore['INSTANCES'])
 		ports = datastore['PORTS']
 
-		sap_instances.each do |i|
-			sap_ports << (ports.gsub('NN', "%02d" % i)).to_s
+		# if we have INSTANCES, let's fill in the NN on PORTS
+		if sap_instances  and ports.include? 'NN'
+			sap_instances.each { |i| sap_ports << (ports.gsub('NN', "%02d" % i)).to_s }
+			ports =   Rex::Socket.portspec_crack(sap_ports.join(','))
+		else
+			ports =   Rex::Socket.portspec_crack(ports)
 		end
-
-		ports =   Rex::Socket.portspec_crack(sap_ports.join(','))
 
 	end
 
@@ -256,9 +260,14 @@ class Metasploit3 < Msf::Auxiliary
 
 		timeout = datastore['TIMEOUT'].to_i
 
-
 		sap_host = datastore['SAPROUTER_HOST']
 		sap_port = datastore['SAPROUTER_PORT']
+
+		# if port definition has NN then we require INSTANCES
+		if datastore['PORTS'].include? 'NN' and datastore['INSTANCES'].nil?
+			print_error('Error: No instances specified')
+			return
+		end
 
 		ports = build_sap_ports()
 
